@@ -190,3 +190,79 @@ example : ((∀ x, p x) ∧ (x = y)) → p y := by
 example : ((∀ x, p x) ∧ (x = y)) → p y := by
   intro h
   exact h.1 y
+
+variable (α : Type) (p q : α → Prop)
+variable (r : Prop)
+
+example : α → ((∀ x : α, r) ↔ r) := by
+  intro a
+  apply Iff.intro
+  · intro h -- forward
+    exact h a
+  · intro h -- backward
+    intro x
+    exact h
+
+
+
+example : (∀ x, p x ∨ r) ↔ (∀ x, p x) ∨ r := sorry
+example : (∀ x, r → p x) ↔ (r → ∀ x, p x) := by
+  apply Iff.intro
+  -- (∀ x, r → p x) → (r → ∀ x, p x)
+  · intro h
+    intro hr
+    intro x
+    have h1 : r → p x :=  h x
+    have h2 : p x := h1 hr
+    exact h2
+  -- (r → ∀ x, p x) → (∀ x, r → p x)
+  · intro h
+    intro x
+    intro hr
+    have h1 : ∀ x, p x := h hr
+    have h2 : p x := h1 x
+    exact h2
+
+
+-- Chapter 5
+
+theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
+  apply And.intro
+  · exact hp
+  · apply And.intro
+    exact hq
+    exact hp
+
+#print test
+
+
+-- intro pulls a variable from the implicit proof state into the explicit proof state
+-- exact is an "exact" match case, where one of the introduced variables is the (sub)proof goal
+-- apply is the introduction of a tactic, which may eliminate subgoals or introduce subgoals
+
+
+-- Deepseek correction:
+-- intro pulls a hypothesis OR a universal quantifier into local context
+--  example : goal : P → Q; intro h adds h : P into context and turns goal into Q
+--  example : goal : ∀ x : α, p x ; intro x adds x : α and turns goal into p x
+
+-- exact closes a goal by providing a term which exactly matches the goal's type
+--  example: goal : P → Q; h : P → Q ; exact h will solve the goal
+--  can also be a previously proven lemma or constructed term
+
+theorem test2 (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
+  apply And.intro hp
+  exact And.intro hq hp
+
+
+-- reflexivity : is a stronger form of equality that has:
+--  alpha equivalence (renames)   : λ x => x  = λ y => y
+--  beta reduction (application)  : λ (+ 1) 1 = 2
+--  delta reduction (definition)  : def n := 2 => n = 2
+--  iota reduction (recursive def) : Nat.add a b := a + b → Nat.add a b = a + b
+--  eta reduction (free variables) : if x is not free in f, (λ x => f x) = f
+--  proof irrelevance             : h1 -> p, h2 -> p => h1 = h2
+
+example (x : α) : x = x := by rfl
+
+example : 1 + 1 = 2 := by rfl
